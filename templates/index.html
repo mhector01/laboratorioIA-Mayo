@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Gate AI - Dashboard</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#0B1120',
+                            panel: '#111827',
+                            border: '#1F2937',
+                            accent: '#00FFC6',
+                            danger: '#FF4D4D',
+                            warning: '#FFB020'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background: radial-gradient(circle at top, #111827 0%, #020617 100%);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 8px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        .glow {
+            box-shadow: 0 0 20px rgba(0, 255, 198, 0.25);
+        }
+
+        .danger-glow {
+            box-shadow: 0 0 15px rgba(255, 77, 77, 0.3);
+        }
+    </style>
+</head>
+
+<body class="text-gray-200 min-h-screen">
+
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- PANEL PRINCIPAL -->
+        <main class="flex-1 p-6 flex flex-col">
+
+            <!-- HEADER -->
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-cyan-400 tracking-wide">
+                        SMART GATE AI
+                    </h1>
+                    <p class="text-gray-400 mt-1">
+                        Sistema Inteligente de Control de Acceso
+                    </p>
+                </div>
+
+                <div class="bg-green-500/10 border border-green-500/30 px-4 py-2 rounded-lg">
+                    <span class="text-green-400 font-semibold">
+                        ● Sistema Activo
+                    </span>
+                </div>
+            </div>
+
+            <!-- STREAM DE CÁMARA -->
+            <div class="flex-1 bg-cyber-panel border border-cyber-border rounded-2xl p-4 glow flex items-center justify-center overflow-hidden">
+
+                <img src="{{ url_for('video_feed') }}"
+                     class="w-full h-auto rounded-lg shadow-lg border border-cyan-500/20">
+
+            </div>
+
+        </main>
+
+        <!-- PANEL DERECHO -->
+        <aside class="w-[420px] bg-cyber-panel border-l border-cyber-border p-5 overflow-hidden flex flex-col">
+
+            <div class="mb-5">
+                <h2 class="text-2xl font-bold text-cyan-400">
+                    Historial de Accesos
+                </h2>
+                <p class="text-sm text-gray-400 mt-1">
+                    Actualización automática cada 2 segundos
+                </p>
+            </div>
+
+            <!-- TABLA -->
+            <div class="flex-1 overflow-y-auto rounded-xl border border-cyber-border">
+
+                <table class="w-full text-sm text-left">
+                    <thead class="sticky top-0 bg-slate-900 z-10">
+                        <tr class="border-b border-cyber-border text-cyan-300">
+                            <th class="px-4 py-3">ID</th>
+                            <th class="px-4 py-3">Usuario</th>
+                            <th class="px-4 py-3">Ubicación</th>
+                            <th class="px-4 py-3">Confianza</th>
+                            <th class="px-4 py-3">Estado</th>
+                            <th class="px-4 py-3">Fecha</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="logsTable" class="divide-y divide-slate-800">
+                        <!-- Datos dinámicos -->
+                    </tbody>
+                </table>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+    <script>
+        async function cargarLogs() {
+            try {
+                const response = await fetch('/api/logs');
+                const logs = await response.json();
+
+                const table = document.getElementById('logsTable');
+                table.innerHTML = '';
+
+                logs.forEach(log => {
+
+                    const estado = log.estado || 'Normal';
+                    const esAlerta = estado !== 'Normal';
+
+                    const row = document.createElement('tr');
+
+                    row.className = esAlerta
+                        ? 'bg-red-500/15 text-red-300 font-semibold danger-glow'
+                        : 'hover:bg-slate-800/50 transition';
+
+                    row.innerHTML = `
+                        <td class="px-4 py-3">${log.id}</td>
+                        <td class="px-4 py-3">${log.usuario}</td>
+                        <td class="px-4 py-3">${log.ubicacion}</td>
+                        <td class="px-4 py-3">
+                            <span class="${log.confianza >= 80 ? 'text-green-400' : 'text-yellow-400'}">
+                                ${log.confianza}%
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="${esAlerta ? 'text-red-400 animate-pulse' : 'text-green-400'}">
+                                ${estado}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-gray-400 whitespace-nowrap">
+                            ${log.fecha}
+                        </td>
+                    `;
+
+                    table.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error('Error cargando logs:', error);
+            }
+        }
+
+        // Primera carga
+        cargarLogs();
+
+        // Actualización automática cada 2 segundos
+        setInterval(cargarLogs, 2000);
+    </script>
+
+</body>
+</html>
