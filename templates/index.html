@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Gate AI — Dashboard Biométrico</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#0B1120',
+                            panel: '#111827',
+                            border: '#1F2937',
+                            accent: '#00FFC6',
+                            danger: '#FF4D4D',
+                            warning: '#FFB020'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="text-gray-200 min-h-screen antialiased">
+
+    <!-- ══════════════════════════════════════════════
+         CONTENEDOR PRINCIPAL — GRID RESPONSIVO
+         ══════════════════════════════════════════════ -->
+    <div class="h-screen overflow-hidden grid
+                grid-cols-1
+                lg:grid-cols-[1fr,440px]
+                xl:grid-cols-[1fr,480px]">
+
+        <!-- ──── PANEL PRINCIPAL: HEADER + STREAM ──── -->
+        <main class="flex flex-col min-h-0 p-4 md:p-6 gap-4 md:gap-5">
+
+            <!-- HEADER -->
+            <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-wider text-cyan-300 flex items-center gap-3">
+                        <span class="text-cyan-400 select-none">◆</span>
+                        SMART GATE AI
+                    </h1>
+                    <p class="text-xs md:text-sm text-gray-500 mt-0.5 tracking-wide uppercase">
+                        Sistema inteligente de control biométrico
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <!-- Estado del servicio -->
+                    <div class="flex items-center gap-2 bg-green-500/5 border border-green-500/15 px-3 md:px-4 py-1.5 md:py-2 rounded-lg">
+                        <span class="w-2 h-2 rounded-full bg-green-400 dot-alive"></span>
+                        <span class="text-green-300 text-xs md:text-sm font-semibold tracking-wide">
+                            SISTEMA ACTIVO
+                        </span>
+                    </div>
+                    <!-- Modo estabilidad -->
+                    <div class="hidden sm:flex items-center gap-2 bg-cyan-500/5 border border-cyan-500/15 px-3 py-1.5 md:py-2 rounded-lg">
+                        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                        <span class="text-cyan-300 text-xs font-mono tracking-wide">
+                            EN VIVO
+                        </span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- CONTENEDOR DE VIDEO CON MARCO TECNOLÓGICO -->
+            <div class="relative flex-1 bg-cyber-panel border border-cyber-border rounded-xl md:rounded-2xl
+                        glow flex items-center justify-center overflow-hidden min-h-0">
+
+                <!-- Marco de esquinas (tech-frame) -->
+                <div class="tech-frame absolute inset-0 z-10">
+                    <span class="corner-br"></span>
+                    <span class="corner-bl"></span>
+                </div>
+
+                <!-- Overlay de barrido / scan-line -->
+                <div class="scan-overlay"></div>
+
+                <!-- Video stream -->
+                <img src="{{ url_for('video_feed') }}"
+                     alt="Transmisión de cámara en vivo — Smart Gate"
+                     class="w-full h-full object-contain rounded-xl md:rounded-2xl
+                            border border-cyan-500/10
+                            bg-black/40
+                            relative z-[1]"
+                     style="image-rendering: auto;">
+
+                <!-- Etiqueta de cámara -->
+                <div class="absolute bottom-4 left-4 z-20 flex items-center gap-2
+                            bg-black/60 backdrop-blur-sm border border-cyan-500/20
+                            px-3 py-1.5 rounded-md text-xs text-cyan-300/80 font-mono">
+                    <span>●</span> CÁMARA SEGURA
+                </div>
+            </div>
+
+        </main>
+
+        <!-- ──── PANEL LATERAL: HISTORIAL DE ACCESOS ──── -->
+        <aside class="flex flex-col min-h-0 border-t lg:border-t-0 lg:border-l border-cyber-border
+                     bg-cyber-panel/80 backdrop-blur-sm">
+
+            <!-- Cabecera del panel -->
+            <div class="flex-shrink-0 px-4 md:px-5 pt-4 md:pt-5 pb-3 border-b border-cyber-border">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-base md:text-lg font-bold text-cyan-300 tracking-wide">
+                        HISTORIAL DE ACCESOS
+                    </h2>
+                    <span id="logCount" class="text-xs text-gray-500 font-mono bg-slate-800/60 px-2 py-0.5 rounded-md">
+                        0
+                    </span>
+                </div>
+                <p class="text-xs text-gray-500 mt-1 tracking-wide">
+                    Actualización automática cada 2 segundos
+                </p>
+            </div>
+
+            <!-- Tabla scrolleable -->
+            <div class="flex-1 overflow-y-auto">
+
+                <table class="w-full text-xs md:text-sm text-left border-collapse">
+                    <thead class="sticky top-0 z-10">
+                        <tr class="bg-slate-900/95 backdrop-blur-sm border-b border-cyber-border text-cyan-400/80 text-[0.65rem] md:text-[0.7rem] uppercase tracking-wider">
+                            <th class="px-3 md:px-4 py-2.5 md:py-3 font-semibold">ID</th>
+                            <th class="px-3 md:px-4 py-2.5 md:py-3 font-semibold">Usuario</th>
+                            <th class="px-3 md:px-4 py-2.5 md:py-3 font-semibold">Ubicación</th>
+                            <th class="px-3 md:px-4 py-2.5 md:py-3 font-semibold text-center">Confianza</th>
+                            <th class="px-3 md:px-4 py-2.5 md:py-3 font-semibold text-center">Estado</th>
+                            <th class="px-3 md:px-4 py-2.5 md:py-3 font-semibold whitespace-nowrap">Fecha</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="logsTable" class="divide-y divide-slate-800/60">
+                        <!-- Poblado dinámicamente por JavaScript -->
+                    </tbody>
+                </table>
+
+            </div>
+
+            <!-- Pie del panel con indicador de conexión -->
+            <div class="flex-shrink-0 px-4 md:px-5 py-2.5 border-t border-cyber-border
+                        flex items-center justify-between text-[0.6rem] text-gray-600">
+                <span class="flex items-center gap-1.5">
+                    <span id="connectionDot" class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                    <span id="connectionStatus" class="font-mono">Conectado</span>
+                </span>
+                <span class="font-mono">API /logs</span>
+            </div>
+
+        </aside>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</body>
+</html>
